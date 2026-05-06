@@ -2,160 +2,209 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garaje Cloud Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Garaje Pro Cloud</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.4); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f1f5f9; }
+        .card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(71, 85, 105, 0.3); border-radius: 1.5rem; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); transition: all 0.2s; }
+        .btn-primary:active { scale: 0.95; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="p-4 pb-24">
 
-    <div id="setup" class="w-full max-w-sm space-y-8 animate-in fade-in duration-500">
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="min-h-[80vh] flex flex-col justify-center items-center space-y-8 animate-in fade-in duration-500">
         <div class="text-center">
-            <h1 class="text-3xl font-black text-blue-500 tracking-tighter uppercase">Nube Activa</h1>
-            <p class="text-slate-500 text-xs font-bold mt-2 font-bold">Sincronización mi-garaje-app</p>
+            <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-900/50">
+                <span class="text-3xl">🚗</span>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight">GARAJE PRO</h1>
+            <p class="text-slate-400 text-sm">Control Total de mi-garaje-app</p>
         </div>
 
-        <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
-            <input type="password" id="tk" placeholder="Pega el Token de GitHub" 
-                   class="w-full p-4 bg-slate-900/50 rounded-2xl border border-slate-800 text-white text-center mb-4 focus:border-blue-500 outline-none">
-            
-            <button onclick="conectar()" id="btn" 
-                    class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black text-white shadow-lg active:scale-95 transition-all">
-                CONECTAR AL REPO
-            </button>
+        <div class="card p-8 w-full max-w-sm space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Usuario</label>
+                <input type="text" id="user" value="Master3030" readonly class="w-full p-4 bg-slate-900/50 rounded-xl border border-slate-700 text-slate-400 outline-none mt-1">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 text-blue-400">Contraseña (Token GitHub)</label>
+                <input type="password" id="pass" placeholder="••••••••••••" class="w-full p-4 bg-slate-900 rounded-xl border border-blue-500/30 text-white outline-none mt-1 focus:border-blue-500">
+            </div>
+            <button onclick="auth()" id="login-btn" class="btn-primary w-full py-4 rounded-xl font-bold shadow-lg shadow-blue-900/20 uppercase tracking-wider mt-4">Ingresar al Sistema</button>
         </div>
     </div>
 
-    <div id="main" class="hidden w-full max-w-md animate-in slide-in-from-bottom duration-500">
-        <div class="glass p-8 rounded-[3rem] mb-6 text-center border-b-4 border-b-blue-600 shadow-2xl">
-            <p class="text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2 font-bold">Kilometraje Actual</p>
-            <h2 class="text-6xl font-black tracking-tighter text-white" id="km-display">0</h2>
-            <button onclick="setKm()" class="mt-6 text-[10px] font-black bg-slate-800 px-6 py-2 rounded-full border border-slate-700 uppercase">Actualizar</button>
+    <!-- PANEL PRINCIPAL (OCULTO INICIALMENTE) -->
+    <div id="app-screen" class="hidden max-w-md mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+        
+        <!-- RESUMEN KM -->
+        <div class="card p-6 text-center border-b-4 border-blue-500">
+            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Kilometraje Actual</span>
+            <h2 id="display-km" class="text-5xl font-black my-2">0</h2>
+            <button onclick="updateKm()" class="bg-slate-800 hover:bg-slate-700 px-6 py-2 rounded-full text-xs font-bold border border-slate-700 transition-colors">ACTUALIZAR KM</button>
         </div>
-        <div id="list" class="space-y-3"></div>
+
+        <!-- PESTAÑAS -->
+        <div class="flex p-1 bg-slate-900 rounded-xl">
+            <button onclick="tab('mantenimiento')" id="t-m" class="flex-1 py-2 rounded-lg text-xs font-bold bg-blue-600">MANTENIMIENTO</button>
+            <button onclick="tab('gastos')" id="t-g" class="flex-1 py-2 rounded-lg text-xs font-bold">GASTOS</button>
+        </div>
+
+        <!-- SECCION MANTENIMIENTO -->
+        <div id="sec-mantenimiento" class="space-y-3"></div>
+
+        <!-- SECCION GASTOS -->
+        <div id="sec-gastos" class="hidden space-y-4">
+            <button onclick="addGasto()" class="w-full p-4 border-2 border-dashed border-slate-700 rounded-2xl text-slate-500 font-bold hover:border-blue-500 hover:text-blue-500 transition-all">+ NUEVO GASTO</button>
+            <div id="gastos-list" class="space-y-3"></div>
+        </div>
     </div>
 
     <script>
-        let conf = { u: 'Master3030', r: 'mi-garaje-app', t: '' };
-        let db = { km: 0, parts: [], sha: '' };
-        const FILE = 'garage_vault_pro.json';
+        let config = { user: 'Master3030', repo: 'mi-garaje-app', token: '' };
+        let db = { km: 0, parts: [], gastos: [], sha: '' };
+        const FILE_PATH = 'garage_vault_pro.json';
 
-        async function conectar() {
-            const token = document.getElementById('tk').value.trim();
-            if(!token) return;
+        // --- SISTEMA DE AUTENTICACIÓN ---
+        async function auth() {
+            const pass = document.getElementById('pass').value.trim();
+            if(!pass) return alert("Por favor, ingresa tu contraseña (Token)");
             
-            conf.t = token;
-            const btn = document.getElementById('btn');
-            btn.innerText = "BUSCANDO DATOS...";
+            config.token = pass;
+            const btn = document.getElementById('login-btn');
+            btn.innerText = "VERIFICANDO...";
             btn.disabled = true;
 
-            // Intentamos cargar
-            const res = await load();
-            if(res === "OK") {
-                go();
-            } else if(res === "NOT_FOUND") {
-                btn.innerText = "CREANDO ARCHIVO...";
-                const created = await save(true);
-                if(created) go();
-                else showError(btn);
+            const success = await loadData();
+            if(success) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                render();
             } else {
-                showError(btn);
+                alert("Error de acceso. Verifica tu Token.");
+                btn.innerText = "INGRESAR AL SISTEMA";
+                btn.disabled = false;
             }
         }
 
-        function showError(btn) {
-            alert("Error de conexión. Revisa el Token.");
-            btn.innerText = "CONECTAR AL REPO";
-            btn.disabled = false;
-        }
-
-        function go() {
-            document.getElementById('setup').classList.add('hidden');
-            document.getElementById('main').classList.remove('hidden');
-            render();
-        }
-
-        async function load() {
+        // --- COMUNICACIÓN CON GITHUB ---
+        async function loadData() {
             try {
-                const r = await fetch(`https://api.github.com/repos/${conf.u}/${conf.r}/contents/${FILE}`, {
-                    headers: { 'Authorization': `Bearer ${conf.t}`, 'Accept': 'application/vnd.github.v3+json' }
+                const r = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${FILE_PATH}`, {
+                    headers: { 'Authorization': `Bearer ${config.token}`, 'Accept': 'application/vnd.github.v3+json' }
                 });
                 if(r.ok) {
-                    const j = await r.json();
-                    db = JSON.parse(atob(j.content));
-                    db.sha = j.sha;
-                    return "OK";
-                } else if(r.status === 404) {
-                    return "NOT_FOUND";
-                }
-            } catch(e) {}
-            return "ERROR";
-        }
-
-        async function save(init = false) {
-            if(init) {
-                db.parts = [
-                    { n: "Aceite Motor", l: 10000, u: 0, i: "🛢️" },
-                    { n: "Correa Distribución", l: 120000, u: 0, i: "⚙️" },
-                    { n: "Bujías", l: 100000, u: 0, i: "⚡" },
-                    { n: "Pastillas de Freno", l: 60000, u: 0, i: "🛑" }
-                ];
-            }
-
-            try {
-                const r = await fetch(`https://api.github.com/repos/${conf.u}/${conf.r}/contents/${FILE}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${conf.t}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: "Sync: " + new Date().toISOString(),
-                        content: btoa(unescape(encodeURIComponent(JSON.stringify(db, null, 2)))),
-                        sha: db.sha || undefined
-                    })
-                });
-                if(r.ok) {
-                    const j = await r.json();
-                    db.sha = j.content.sha;
+                    const data = await r.json();
+                    // Decodificación UTF-8 segura para evitar símbolos raros
+                    db = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                    db.sha = data.sha;
                     return true;
                 }
-            } catch(e) {}
+            } catch(e) { console.error(e); }
             return false;
         }
 
-        function setKm() {
-            const n = prompt("Kilometraje actual:", db.km);
-            if(n) { db.km = parseInt(n); save(); render(); }
+        async function saveData() {
+            try {
+                const content64 = btoa(unescape(encodeURIComponent(JSON.stringify(db, null, 2))));
+                const r = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${FILE_PATH}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${config.token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: "Update: " + new Date().toLocaleString(),
+                        content: content64,
+                        sha: db.sha
+                    })
+                });
+                if(r.ok) {
+                    const res = await r.json();
+                    db.sha = res.content.sha;
+                    return true;
+                }
+            } catch(e) { alert("Error al guardar en la nube"); }
+            return false;
+        }
+
+        // --- LÓGICA DE NEGOCIO ---
+        function tab(t) {
+            document.getElementById('sec-mantenimiento').classList.toggle('hidden', t !== 'mantenimiento');
+            document.getElementById('sec-gastos').classList.toggle('hidden', t !== 'gastos');
+            document.getElementById('t-m').className = t === 'mantenimiento' ? 'flex-1 py-2 rounded-lg text-xs font-bold bg-blue-600' : 'flex-1 py-2 rounded-lg text-xs font-bold';
+            document.getElementById('t-g').className = t === 'gastos' ? 'flex-1 py-2 rounded-lg text-xs font-bold bg-blue-600' : 'flex-1 py-2 rounded-lg text-xs font-bold';
+        }
+
+        function updateKm() {
+            const val = prompt("Ingresa el Kilometraje actual:", db.km);
+            if(val !== null && val !== "") {
+                db.km = parseInt(val);
+                saveData();
+                render();
+            }
+        }
+
+        function addGasto() {
+            const desc = prompt("¿En qué gastaste? (Ej: Nafta, Seguro, Cubierta)");
+            const monto = prompt("Monto del gasto:");
+            if(desc && monto) {
+                db.gastos.unshift({ d: desc, m: monto, f: new Date().toLocaleDateString() });
+                saveData();
+                render();
+            }
+        }
+
+        function resetPart(i) {
+            if(confirm(`¿Confirmas el mantenimiento de ${db.parts[i].n}?`)) {
+                db.parts[i].u = db.km;
+                saveData();
+                render();
+            }
         }
 
         function render() {
-            document.getElementById('km-display').innerText = db.km.toLocaleString();
-            const list = document.getElementById('list');
-            list.innerHTML = '';
+            document.getElementById('display-km').innerText = db.km.toLocaleString() + " km";
+            
+            // Render Mantenimiento
+            const mList = document.getElementById('sec-mantenimiento');
+            mList.innerHTML = '';
             db.parts.forEach((p, i) => {
-                const diff = db.km - p.u;
-                const pct = Math.min(100, (diff / p.l) * 100);
-                list.innerHTML += `
-                    <div class="glass p-5 rounded-[2rem] shadow-lg">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="font-bold text-white/90">${p.i} ${p.n}</span>
-                            <button onclick="reset(${i})" class="text-[9px] font-black bg-blue-600 px-3 py-1 rounded-lg uppercase">Reset</button>
+                const uso = db.km - p.u;
+                const pct = Math.min(100, (uso / p.l) * 100);
+                mList.innerHTML += `
+                    <div class="card p-5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg">${p.i} ${p.n}</span>
+                            <button onclick="resetPart(${i})" class="text-[10px] font-bold bg-blue-600/20 text-blue-400 px-3 py-1 rounded-lg border border-blue-500/30 uppercase">Cambiar</button>
                         </div>
-                        <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-                            <div class="h-full ${pct > 90 ? 'bg-red-500' : 'bg-blue-500'} transition-all duration-700" style="width:${pct}%"></div>
+                        <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                            <div class="h-full ${pct > 85 ? 'bg-red-500' : 'bg-green-500'} transition-all duration-1000" style="width: ${pct}%"></div>
                         </div>
-                        <div class="flex justify-between text-[9px] font-black text-slate-500 mt-2 uppercase">
-                            <span>Uso: ${diff} km</span>
-                            <span>Vida: ${p.l} km</span>
+                        <div class="flex justify-between text-[10px] font-bold text-slate-500 uppercase">
+                            <span>Uso: ${uso.toLocaleString()} km</span>
+                            <span>Límite: ${p.l.toLocaleString()} km</span>
                         </div>
                     </div>`;
             });
-        }
 
-        function reset(i) {
-            if(confirm("¿Reiniciar " + db.parts[i].n + "?")) { db.parts[i].u = db.km; save(); render(); }
+            // Render Gastos
+            const gList = document.getElementById('gastos-list');
+            gList.innerHTML = '';
+            if(db.gastos.length === 0) gList.innerHTML = '<p class="text-center text-slate-600 text-sm py-8">No hay gastos registrados todavía.</p>';
+            db.gastos.forEach(g => {
+                gList.innerHTML += `
+                    <div class="card p-4 flex justify-between items-center border-l-4 border-l-yellow-500">
+                        <div>
+                            <p class="font-bold text-white">${g.d}</p>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase">${g.f}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-green-400 font-black text-lg">$${g.m}</p>
+                        </div>
+                    </div>`;
+            });
         }
     </script>
 </body>
