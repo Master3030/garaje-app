@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garaje Cloud Pro</title>
+    <title>Garaje Cloud Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -19,51 +19,51 @@
             <p class="text-slate-500 text-xs font-bold mt-2">Sincronización vía mi-garaje-app</p>
         </div>
 
-        <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
-            <div class="space-y-4">
-                <input type="password" id="tk" placeholder="Pega el nuevo Token de GitHub" 
-                       class="w-full p-4 bg-slate-900/50 rounded-2xl border border-slate-800 text-white text-center focus:border-blue-500 outline-none">
-                
-                <button onclick="conectar()" id="btn" 
-                        class="w-full bg-blue-600 py-4 rounded-2xl font-black text-white shadow-lg active:scale-95 transition-all">
-                    CONECTAR AHORA
-                </button>
-            </div>
+        <div class="glass p-8 rounded-[2.5rem] shadow-2xl text-center">
+            <input type="password" id="tk" placeholder="Pega el nuevo Token aquí" 
+                   class="w-full p-4 bg-slate-900/50 rounded-2xl border border-slate-800 text-white text-center focus:border-blue-500 outline-none mb-4">
+            
+            <button onclick="conectar()" id="btn" 
+                    class="w-full bg-blue-600 py-4 rounded-2xl font-black text-white shadow-lg active:scale-95 transition-all">
+                CONECTAR AHORA
+            </button>
         </div>
     </div>
 
     <div id="main" class="hidden w-full max-w-md">
         <div class="glass p-8 rounded-[3rem] mb-6 text-center border-b-4 border-b-blue-600">
-            <p class="text-blue-400 text-[10px] font-black uppercase mb-2">Estado del Vehículo</p>
             <h2 class="text-6xl font-black tracking-tighter" id="km-display">0</h2>
-            <p class="text-slate-500 text-sm mt-1 font-bold">KILÓMETROS</p>
-            <button onclick="setKm()" class="mt-6 text-xs font-black bg-slate-800 px-6 py-2 rounded-full">ACTUALIZAR KM</button>
+            <p class="text-slate-500 text-sm mt-1 font-bold tracking-widest uppercase">Kilómetros</p>
+            <button onclick="setKm()" class="mt-6 text-[10px] font-black bg-slate-800 px-6 py-2 rounded-full border border-slate-700">ACTUALIZAR</button>
         </div>
-        <div id="list" class="space-y-3"></div>
+        <div id="list" class="grid gap-3"></div>
     </div>
 
     <script>
-        // CONFIGURACIÓN CORREGIDA SEGÚN TU CAPTURA
+        // DATOS CONFIRMADOS: Usuario Master3030 y Repo mi-garaje-app
         let conf = { u: 'Master3030', r: 'mi-garaje-app', t: '' };
         let db = { km: 0, parts: [], sha: '' };
         const FILE = 'garage_vault_pro.json';
 
         async function conectar() {
             const token = document.getElementById('tk').value.trim();
-            if(!token) return alert("Ingresa el token");
+            if(!token) return alert("Pega el token");
             
             conf.t = token;
             const btn = document.getElementById('btn');
-            btn.innerText = "SINCRO EN CURSO...";
+            btn.innerText = "AUTENTICANDO...";
             btn.disabled = true;
 
+            // Intentamos cargar o crear
             const ok = await load();
-            if(ok) { go(); } 
-            else {
+            if(ok) {
+                go();
+            } else {
                 const created = await save(true);
-                if(created) go();
-                else {
-                    alert("Error: Verifica que el Token tenga permiso 'repo'.");
+                if(created) {
+                    go();
+                } else {
+                    alert("ERROR DE PERMISOS: GitHub rechazó el token. Verifica que el Repo 'mi-garaje-app' existe y es PRIVADO.");
                     btn.innerText = "CONECTAR AHORA";
                     btn.disabled = false;
                 }
@@ -78,8 +78,13 @@
 
         async function load() {
             try {
+                // Usamos la API de contenidos de GitHub
                 const r = await fetch(`https://api.github.com/repos/${conf.u}/${conf.r}/contents/${FILE}`, {
-                    headers: { 'Authorization': `Bearer ${conf.t}`, 'Accept': 'application/vnd.github.v3+json' }
+                    headers: { 
+                        'Authorization': `token ${conf.t}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Cache-Control': 'no-cache'
+                    }
                 });
                 if(r.ok) {
                     const j = await r.json();
@@ -97,19 +102,25 @@
                     { n: "Aceite Motor", l: 10000, u: 0, i: "🛢️" },
                     { n: "Correa Distribución", l: 120000, u: 0, i: "⚙️" },
                     { n: "Bujías", l: 100000, u: 0, i: "⚡" },
-                    { n: "Pastillas de Freno", l: 60000, u: 0, i: "🛑" }
+                    { n: "Discos Freno", l: 120000, u: 0, i: "💿" }
                 ];
             }
 
+            const url = `https://api.github.com/repos/${conf.u}/${conf.r}/contents/${FILE}`;
+            const body = {
+                message: "Sync Garaje Cloud",
+                content: btoa(JSON.stringify(db, null, 2))
+            };
+            if(db.sha) body.sha = db.sha;
+
             try {
-                const r = await fetch(`https://api.github.com/repos/${conf.u}/${conf.r}/contents/${FILE}`, {
+                const r = await fetch(url, {
                     method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${conf.t}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: "Cloud Sync",
-                        content: btoa(JSON.stringify(db, null, 2)),
-                        sha: db.sha || undefined
-                    })
+                    headers: { 
+                        'Authorization': `token ${conf.t}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
                 });
                 if(r.ok) {
                     const j = await r.json();
@@ -121,7 +132,7 @@
         }
 
         function setKm() {
-            const n = prompt("Kilometraje actual:", db.km);
+            const n = prompt("KM Actual:", db.km);
             if(n) { db.km = parseInt(n); save(); render(); }
         }
 
@@ -133,24 +144,21 @@
                 const diff = db.km - p.u;
                 const pct = Math.min(100, (diff / p.l) * 100);
                 list.innerHTML += `
-                    <div class="glass p-5 rounded-[2rem] flex flex-col gap-3">
+                    <div class="glass p-5 rounded-[2rem] flex flex-col gap-2">
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-lg">${p.i} ${p.n}</span>
-                            <button onclick="reset(${i})" class="text-[10px] font-black bg-blue-600/20 text-blue-400 px-3 py-1 rounded-lg">RESET</button>
+                            <span class="font-bold">${p.i} ${p.n}</span>
+                            <button onclick="reset(${i})" class="text-[10px] font-black text-blue-500 bg-blue-500/10 px-3 py-1 rounded-lg">RESET</button>
                         </div>
-                        <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-                            <div class="h-full ${pct > 90 ? 'bg-red-500' : 'bg-blue-500'} rounded-full" style="width:${pct}%"></div>
+                        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full ${pct > 90 ? 'bg-red-500' : 'bg-blue-500'}" style="width:${pct}%"></div>
                         </div>
-                        <div class="flex justify-between text-[10px] font-bold text-slate-500">
-                            <span>USO: ${diff} KM</span>
-                            <span>LÍMITE: ${p.l} KM</span>
-                        </div>
+                        <p class="text-[10px] font-bold text-slate-500 text-right">${diff} / ${p.l} KM</p>
                     </div>`;
             });
         }
 
         function reset(i) {
-            if(confirm("¿Confirmas el cambio?")) { db.parts[i].u = db.km; save(); render(); }
+            if(confirm("¿Confirmas el mantenimiento?")) { db.parts[i].u = db.km; save(); render(); }
         }
     </script>
 </body>
