@@ -9,182 +9,103 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; }
         .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.4); }
-        input { background: #0f172a !important; border: 1px solid #1e293b !important; color: white !important; }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen p-4">
 
-    <div id="loader" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950 hidden">
+    <div id="view-setup" class="max-w-md mx-auto space-y-6 pt-10">
         <div class="text-center">
-            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p id="loader-text" class="mt-4 text-blue-500 font-bold text-xs uppercase tracking-widest">Sincronizando...</p>
+            <h1 class="text-2xl font-bold text-blue-500">Sincronización Cloud</h1>
+            <p class="text-slate-400 text-sm">Configura tu conexión privada</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-[2rem] space-y-4">
+            <input type="password" id="input-token" placeholder="Pega tu Token aquí" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800 text-white">
+            <button onclick="configurarApp()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold shadow-lg">ACTIVAR NUBE</button>
         </div>
     </div>
 
-    <div class="max-w-md mx-auto p-4 flex flex-col min-h-screen">
-        
-        <section id="view-login" class="flex-1 flex flex-col justify-center">
-            <div class="text-center mb-10">
-                <div class="w-20 h-20 bg-blue-600 rounded-3xl mx-auto flex items-center justify-center shadow-2xl mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                </div>
-                <h1 class="text-3xl font-extrabold">Mi Garaje Cloud</h1>
-            </div>
-
-            <div class="glass-card p-8 rounded-[2.5rem] space-y-4">
-                <input type="text" id="login-user" placeholder="Usuario" class="w-full p-4 rounded-2xl">
-                <input type="password" id="login-pass" placeholder="Contraseña de la App" class="w-full p-4 rounded-2xl">
-                <button onclick="handleLogin()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-white shadow-lg active:scale-95">ACCEDER</button>
-                <button onclick="toggleView('view-setup')" class="w-full text-slate-500 text-[10px] font-bold uppercase mt-4">Configuración de Nube</button>
-            </div>
-        </section>
-
-        <section id="view-setup" class="hidden py-10">
-            <h2 class="text-2xl font-bold mb-6 text-center">Vincular Repositorio Privado</h2>
-            <div class="glass-card p-6 rounded-[2rem] space-y-4">
-                <input type="text" id="setup-user" placeholder="Usuario GitHub (ej: Master3030)" class="w-full p-3 rounded-xl">
-                <input type="text" id="setup-repo" placeholder="Repositorio Privado (ej: mantenimiento)" class="w-full p-3 rounded-xl">
-                <input type="password" id="setup-token" placeholder="Token de GitHub" class="w-full p-3 rounded-xl">
-                <input type="password" id="setup-pass" placeholder="Contraseña de entrada a la App" class="w-full p-3 rounded-xl">
-                <button onclick="saveInitialSetup()" class="w-full bg-emerald-600 py-4 rounded-2xl font-bold text-white shadow-lg">VINCULAR Y CREAR DATOS</button>
-                <button onclick="toggleView('view-login')" class="w-full text-slate-500 text-sm mt-2 text-center">Volver</button>
-            </div>
-        </section>
-
-        <main id="view-app" class="hidden flex-1 py-6">
-            <header class="flex justify-between items-center mb-8">
-                <h2 class="text-xl font-bold" id="user-title">Mi Garaje</h2>
-                <button onclick="logout()" class="p-3 bg-slate-900 rounded-2xl text-slate-400">SALIR</button>
-            </header>
-
-            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2.5rem] p-8 mb-8 text-center">
-                <p class="text-blue-100 text-[10px] font-bold uppercase mb-2">Kilometraje Actual</p>
-                <input type="number" id="app-km" class="w-full bg-transparent text-6xl font-black text-white text-center border-none" value="0">
-                <button onclick="syncAllToCloud()" class="mt-6 bg-white text-blue-600 px-10 py-3 rounded-2xl font-black text-xs">ACTUALIZAR NUBE</button>
-            </div>
-
-            <div id="app-parts" class="grid gap-4 mb-10"></div>
-        </main>
+    <div id="view-main" class="hidden max-w-md mx-auto">
+        <div class="bg-blue-600 p-8 rounded-[2.5rem] mb-6 text-center shadow-2xl">
+            <h2 class="text-4xl font-black" id="disp-km">0 KM</h2>
+            <p class="text-blue-200 text-xs uppercase font-bold mt-2">Kilometraje Total</p>
+        </div>
+        <div id="parts-list" class="space-y-3"></div>
     </div>
 
     <script>
-        let cloudConfig = null;
-        let garageData = { lastKm: 0, parts: [], history: [], sha: '' };
-        const FILENAME = 'garage_vault_pro.json';
+        // Esta es la parte clave: No guardamos el token como texto plano.
+        let connection = { t: '', u: 'Master3030', r: 'mantenimiento' };
+        let data = { lastKm: 0, parts: [] };
 
-        window.onload = () => {
-            const saved = localStorage.getItem('garage_cloud_link_pro');
-            if (saved) {
-                cloudConfig = JSON.parse(saved);
-                document.getElementById('login-user').value = cloudConfig.user;
-            }
-        };
-
-        function toggleView(id) {
-            ['view-login', 'view-setup', 'view-app'].forEach(v => document.getElementById(v).classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        async function handleLogin() {
-            const user = document.getElementById('login-user').value;
-            const pass = document.getElementById('login-pass').value;
-            if (!cloudConfig || user !== cloudConfig.user || pass !== cloudConfig.pass) return alert("Datos incorrectos");
-            await loadFromCloud();
-            toggleView('view-app');
-        }
-
-        async function saveInitialSetup() {
-            cloudConfig = {
-                user: document.getElementById('setup-user').value.trim(),
-                repo: document.getElementById('setup-repo').value.trim(),
-                token: document.getElementById('setup-token').value.trim(),
-                pass: document.getElementById('setup-pass').value.trim()
-            };
-
-            showLoader("Creando base de datos privada...");
-            garageData.parts = [
-                { id: 1, name: "Aceite Motor", limitKm: 10000, lastKm: 0, icon: "🛢️" },
-                { id: 2, name: "Correa Distribución", limitKm: 120000, lastKm: 0, icon: "⚙️" },
-                { id: 3, name: "Bujías", limitKm: 100000, lastKm: 0, icon: "⚡" },
-                { id: 4, name: "Pastillas Freno", limitKm: 60000, lastKm: 0, icon: "🛑" },
-                { id: 5, name: "Discos Freno", limitKm: 120000, lastKm: 0, icon: "💿" }
-            ];
-
-            const success = await syncAllToCloud(true);
-            if (success) {
-                localStorage.setItem('garage_cloud_link_pro', JSON.stringify(cloudConfig));
-                alert("¡Configurado! Ahora entra con tu usuario y contraseña.");
-                location.reload();
-            } else {
-                hideLoader();
-                alert("Error: Revisa que el Repositorio PRIVADO exista y el Token sea correcto.");
-            }
-        }
-
-        async function loadFromCloud() {
-            showLoader("Cargando datos...");
-            const url = `https://api.github.com/repos/${cloudConfig.user}/${cloudConfig.repo}/contents/${FILENAME}`;
-            try {
-                const res = await fetch(url, { headers: { 'Authorization': `token ${cloudConfig.token}` } });
-                if (res.ok) {
-                    const json = await res.json();
-                    garageData = JSON.parse(atob(json.content));
-                    garageData.sha = json.sha;
-                    document.getElementById('app-km').value = garageData.lastKm;
-                    renderParts();
-                }
-            } finally { hideLoader(); }
-        }
-
-        async function syncAllToCloud(isNew = false) {
-            const km = parseInt(document.getElementById('app-km').value) || 0;
-            garageData.lastKm = km;
-            const url = `https://api.github.com/repos/${cloudConfig.user}/${cloudConfig.repo}/contents/${FILENAME}`;
+        async function configurarApp() {
+            const rawToken = document.getElementById('input-token').value.trim();
+            if(!rawToken) return alert("Ingresa el token");
             
-            const payload = {
-                message: "Sync Garaje",
-                content: btoa(JSON.stringify({ lastKm: garageData.lastKm, parts: garageData.parts, history: garageData.history }, null, 2))
-            };
-            if (!isNew && garageData.sha) payload.sha = garageData.sha;
+            connection.t = rawToken;
+            
+            // Intentamos crear/leer el archivo en la nube
+            const success = await sync(true);
+            if(success) {
+                document.getElementById('view-setup').classList.add('hidden');
+                document.getElementById('view-main').classList.remove('hidden');
+                alert("Conectado a la nube con éxito");
+            } else {
+                alert("Error de conexión. Verifica el token o que el repo 'mantenimiento' sea privado.");
+            }
+        }
+
+        async function sync(isInit = false) {
+            const fileName = 'garage_vault_pro.json';
+            const url = `https://api.github.com/repos/${connection.u}/${connection.r}/contents/${fileName}`;
+            
+            // Si es la primera vez, creamos la estructura que pediste en el audio
+            if(isInit) {
+                data.parts = [
+                    { n: "Aceite Motor", l: 10000, c: 0, i: "🛢️" },
+                    { n: "Correa Distribución", l: 120000, c: 0, i: "⚙️" },
+                    { n: "Bujías", l: 100000, c: 0, i: "⚡" },
+                    { n: "Discos Freno", l: 120000, c: 0, i: "💿" }
+                ];
+            }
 
             try {
                 const res = await fetch(url, {
                     method: 'PUT',
-                    headers: { 'Authorization': `token ${cloudConfig.token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    headers: { 'Authorization': `token ${connection.t}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: "Cloud Sync",
+                        content: btoa(JSON.stringify(data)),
+                        sha: data.sha || null
+                    })
                 });
-                if (res.ok) {
-                    const r = await res.json();
-                    garageData.sha = r.content.sha;
-                    renderParts();
+                
+                if(res.ok) {
+                    const resJson = await res.json();
+                    data.sha = resJson.content.sha;
+                    render();
                     return true;
                 }
-            } catch (e) { console.error(e); }
-            return false;
+            } catch (e) { return false; }
         }
 
-        function renderParts() {
-            const container = document.getElementById('app-parts');
-            container.innerHTML = '';
-            garageData.parts.forEach(p => {
-                const used = garageData.lastKm - p.lastKm;
-                const pct = Math.min(100, (used / p.limitKm) * 100);
-                container.innerHTML += `
-                    <div class="glass-card p-5 rounded-3xl">
-                        <div class="flex justify-between mb-2">
-                            <span class="font-bold">${p.icon} ${p.name}</span>
-                            <span class="text-xs text-slate-400">${used} / ${p.limitKm} km</span>
+        function render() {
+            document.getElementById('disp-km').innerText = data.lastKm + " KM";
+            const list = document.getElementById('parts-list');
+            list.innerHTML = '';
+            data.parts.forEach(p => {
+                list.innerHTML += `
+                    <div class="glass-card p-4 rounded-2xl flex justify-between items-center">
+                        <div>
+                            <p class="font-bold">${p.i} ${p.n}</p>
+                            <p class="text-xs text-slate-500">Límite: ${p.l} km</p>
                         </div>
-                        <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-                            <div class="h-full bg-blue-500" style="width:${pct}%"></div>
+                        <div class="text-right">
+                            <p class="font-black text-blue-400">${p.c} km</p>
                         </div>
                     </div>`;
             });
         }
-
-        function showLoader(t) { document.getElementById('loader-text').innerText = t; document.getElementById('loader').classList.remove('hidden'); }
-        function hideLoader() { document.getElementById('loader').classList.add('hidden'); }
-        function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
 </html>
