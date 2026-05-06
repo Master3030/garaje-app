@@ -1,179 +1,129 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garaje Cloud Pro - Sincronizado</title>
+    <title>Garaje Cloud Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; }
         .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.4); }
-        .progress-bar { transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
         input { background: #0f172a !important; border: 1px solid #1e293b !important; color: white !important; }
-        input:focus { border-color: #2563eb !important; outline: none; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <!-- Cargador -->
     <div id="loader" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950 hidden">
         <div class="text-center">
             <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p id="loader-text" class="mt-4 text-blue-500 font-bold text-xs uppercase tracking-widest">Conectando con GitHub...</p>
+            <p id="loader-text" class="mt-4 text-blue-500 font-bold text-xs uppercase tracking-widest">Sincronizando...</p>
         </div>
     </div>
 
     <div class="max-w-md mx-auto p-4 flex flex-col min-h-screen">
         
-        <!-- LOGIN -->
         <section id="view-login" class="flex-1 flex flex-col justify-center">
             <div class="text-center mb-10">
-                <div class="w-20 h-20 bg-blue-600 rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-blue-500/30 mb-6">
+                <div class="w-20 h-20 bg-blue-600 rounded-3xl mx-auto flex items-center justify-center shadow-2xl mb-6">
                     <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
                 </div>
-                <h1 class="text-3xl font-extrabold tracking-tight">Mi Garaje Cloud</h1>
-                <p class="text-slate-500 mt-2">Gestión profesional de mantenimiento</p>
+                <h1 class="text-3xl font-extrabold">Mi Garaje Cloud</h1>
             </div>
 
-            <div class="glass-card p-8 rounded-[2.5rem] shadow-2xl space-y-4">
+            <div class="glass-card p-8 rounded-[2.5rem] space-y-4">
                 <input type="text" id="login-user" placeholder="Usuario" class="w-full p-4 rounded-2xl">
                 <input type="password" id="login-pass" placeholder="Contraseña de la App" class="w-full p-4 rounded-2xl">
-                <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold text-white shadow-lg transition-all active:scale-95">ACCEDER AL GARAJE</button>
-                <button onclick="toggleView('view-setup')" class="w-full text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-4">Configuración de Nube</button>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-white shadow-lg active:scale-95">ACCEDER</button>
+                <button onclick="toggleView('view-setup')" class="w-full text-slate-500 text-[10px] font-bold uppercase mt-4">Configuración de Nube</button>
             </div>
         </section>
 
-        <!-- SETUP -->
         <section id="view-setup" class="hidden py-10">
-            <h2 class="text-2xl font-bold mb-6">Configurar Almacenamiento</h2>
+            <h2 class="text-2xl font-bold mb-6 text-center">Vincular Repositorio Privado</h2>
             <div class="glass-card p-6 rounded-[2rem] space-y-4">
-                <input type="text" id="setup-user" placeholder="Usuario GitHub" class="w-full p-3 rounded-xl">
-                <input type="text" id="setup-repo" placeholder="Nombre del Repositorio Privado" class="w-full p-3 rounded-xl">
-                <input type="password" id="setup-token" placeholder="GitHub Classic Token (repo scope)" class="w-full p-3 rounded-xl">
-                <hr class="border-slate-800 my-2">
-                <p class="text-xs text-blue-400 font-bold italic uppercase tracking-tighter">Contraseña para esta App:</p>
-                <input type="password" id="setup-pass" placeholder="Nueva Contraseña" class="w-full p-3 rounded-xl">
+                <input type="text" id="setup-user" placeholder="Usuario GitHub (ej: Master3030)" class="w-full p-3 rounded-xl">
+                <input type="text" id="setup-repo" placeholder="Repositorio Privado (ej: mantenimiento)" class="w-full p-3 rounded-xl">
+                <input type="password" id="setup-token" placeholder="Token de GitHub" class="w-full p-3 rounded-xl">
+                <input type="password" id="setup-pass" placeholder="Contraseña de entrada a la App" class="w-full p-3 rounded-xl">
                 <button onclick="saveInitialSetup()" class="w-full bg-emerald-600 py-4 rounded-2xl font-bold text-white shadow-lg">VINCULAR Y CREAR DATOS</button>
-                <button onclick="toggleView('view-login')" class="w-full text-slate-500 text-sm">Volver</button>
+                <button onclick="toggleView('view-login')" class="w-full text-slate-500 text-sm mt-2 text-center">Volver</button>
             </div>
         </section>
 
-        <!-- VISTA PRINCIPAL -->
         <main id="view-app" class="hidden flex-1 py-6">
             <header class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-xl font-bold text-white" id="user-title">Garaje</h2>
-                    <p class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Sincronizado con Nube</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="renderHistory()" class="p-3 bg-slate-900 rounded-2xl text-slate-400 hover:text-white transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
-                    </button>
-                    <button onclick="logout()" class="p-3 bg-slate-900 rounded-2xl text-slate-400 hover:text-red-400 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                    </button>
-                </div>
+                <h2 class="text-xl font-bold" id="user-title">Mi Garaje</h2>
+                <button onclick="logout()" class="p-3 bg-slate-900 rounded-2xl text-slate-400">SALIR</button>
             </header>
 
-            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2.5rem] p-8 mb-8 shadow-2xl shadow-blue-500/20 text-center">
-                <p class="text-blue-100 text-[10px] font-bold uppercase tracking-widest mb-2 opacity-80">Kilometraje en Tablero</p>
-                <div class="flex items-center justify-center">
-                    <input type="number" id="app-km" class="w-full bg-transparent text-6xl font-black text-white text-center focus:outline-none border-none !p-0" value="0">
-                </div>
-                <button onclick="syncAllToCloud()" class="mt-6 bg-white text-blue-600 px-10 py-3 rounded-2xl font-black text-xs shadow-xl active:scale-95 transition-all">SINCRONIZAR KM</button>
+            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2.5rem] p-8 mb-8 text-center">
+                <p class="text-blue-100 text-[10px] font-bold uppercase mb-2">Kilometraje Actual</p>
+                <input type="number" id="app-km" class="w-full bg-transparent text-6xl font-black text-white text-center border-none" value="0">
+                <button onclick="syncAllToCloud()" class="mt-6 bg-white text-blue-600 px-10 py-3 rounded-2xl font-black text-xs">ACTUALIZAR NUBE</button>
             </div>
 
-            <div id="app-parts" class="grid grid-cols-1 gap-4 mb-10"></div>
-            
-            <button onclick="addNewPart()" class="w-full py-5 border-2 border-dashed border-slate-800 rounded-[2.5rem] text-slate-600 font-bold text-xs hover:border-blue-500 hover:text-blue-500 transition-all mb-10">
-                + AÑADIR PIEZA O REVISIÓN
-            </button>
+            <div id="app-parts" class="grid gap-4 mb-10"></div>
         </main>
-
-        <!-- MODAL HISTORIAL -->
-        <div id="modal-history" class="fixed inset-0 z-[60] bg-slate-950/98 hidden overflow-y-auto p-6">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-black text-white">Historial</h2>
-                <button onclick="toggleView('view-app')" class="text-slate-500 font-bold text-sm bg-slate-900 px-4 py-2 rounded-xl">Cerrar</button>
-            </div>
-
-            <div class="glass-card p-6 rounded-3xl mb-8 border-emerald-500/20 bg-emerald-500/5">
-                <h3 class="text-emerald-400 font-bold text-xs uppercase tracking-widest mb-1">Backup Externo</h3>
-                <p class="text-[10px] text-slate-400 mb-4">Descarga una copia local de seguridad.</p>
-                <button onclick="downloadBackup()" class="w-full bg-emerald-600/20 text-emerald-500 border border-emerald-500/30 py-3 rounded-xl font-bold text-[10px] uppercase transition-all hover:bg-emerald-600 hover:text-white">
-                    Descargar .JSON
-                </button>
-            </div>
-
-            <div id="history-list" class="space-y-4 pb-10"></div>
-        </div>
     </div>
 
     <script>
         let cloudConfig = null;
         let garageData = { lastKm: 0, parts: [], history: [], sha: '' };
-        const DATA_FILENAME = 'garage_vault_pro.json';
+        const FILENAME = 'garage_vault_pro.json';
 
         window.onload = () => {
-            const savedConfig = localStorage.getItem('garage_cloud_link_pro');
-            if (savedConfig) {
-                cloudConfig = JSON.parse(savedConfig);
+            const saved = localStorage.getItem('garage_cloud_link_pro');
+            if (saved) {
+                cloudConfig = JSON.parse(saved);
                 document.getElementById('login-user').value = cloudConfig.user;
             }
         };
 
-        function toggleView(viewId) {
-            ['view-login', 'view-setup', 'view-app', 'modal-history'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(viewId).classList.remove('hidden');
+        function toggleView(id) {
+            ['view-login', 'view-setup', 'view-app'].forEach(v => document.getElementById(v).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
         }
 
         async function handleLogin() {
             const user = document.getElementById('login-user').value;
             const pass = document.getElementById('login-pass').value;
-
-            if (!cloudConfig || user !== cloudConfig.user || pass !== cloudConfig.pass) {
-                alert("Error de acceso: Usuario o contraseña incorrectos.");
-                return;
-            }
-
-            document.getElementById('user-title').innerText = `Garaje de ${user}`;
-            await loadAllFromCloud();
+            if (!cloudConfig || user !== cloudConfig.user || pass !== cloudConfig.pass) return alert("Datos incorrectos");
+            await loadFromCloud();
             toggleView('view-app');
         }
 
         async function saveInitialSetup() {
-            const user = document.getElementById('setup-user').value;
-            const repo = document.getElementById('setup-repo').value;
-            const token = document.getElementById('setup-token').value;
-            const pass = document.getElementById('setup-pass').value;
+            cloudConfig = {
+                user: document.getElementById('setup-user').value.trim(),
+                repo: document.getElementById('setup-repo').value.trim(),
+                token: document.getElementById('setup-token').value.trim(),
+                pass: document.getElementById('setup-pass').value.trim()
+            };
 
-            if(!user || !repo || !token || !pass) return alert("Por favor, llena todos los campos.");
+            showLoader("Creando base de datos privada...");
+            garageData.parts = [
+                { id: 1, name: "Aceite Motor", limitKm: 10000, lastKm: 0, icon: "🛢️" },
+                { id: 2, name: "Correa Distribución", limitKm: 120000, lastKm: 0, icon: "⚙️" },
+                { id: 3, name: "Bujías", limitKm: 100000, lastKm: 0, icon: "⚡" },
+                { id: 4, name: "Pastillas Freno", limitKm: 60000, lastKm: 0, icon: "🛑" },
+                { id: 5, name: "Discos Freno", limitKm: 120000, lastKm: 0, icon: "💿" }
+            ];
 
-            showLoader("Configurando nube privada...");
-            cloudConfig = { user, repo, token, pass };
-            
-            // Piezas basadas en el audio analizado
-            garageData.parts = getAudioBasedParts();
-            
             const success = await syncAllToCloud(true);
-            if(success) {
+            if (success) {
                 localStorage.setItem('garage_cloud_link_pro', JSON.stringify(cloudConfig));
-                alert("¡Conexión establecida con éxito!");
+                alert("¡Configurado! Ahora entra con tu usuario y contraseña.");
                 location.reload();
             } else {
                 hideLoader();
-                alert("Error de conexión. Verifica que el Repositorio exista y el Token sea válido.");
+                alert("Error: Revisa que el Repositorio PRIVADO exista y el Token sea correcto.");
             }
         }
 
-        async function loadAllFromCloud() {
-            showLoader("Sincronizando datos...");
-            const url = `https://api.github.com/repos/${cloudConfig.user}/${cloudConfig.repo}/contents/${DATA_FILENAME}`;
-            
+        async function loadFromCloud() {
+            showLoader("Cargando datos...");
+            const url = `https://api.github.com/repos/${cloudConfig.user}/${cloudConfig.repo}/contents/${FILENAME}`;
             try {
                 const res = await fetch(url, { headers: { 'Authorization': `token ${cloudConfig.token}` } });
                 if (res.ok) {
@@ -182,176 +132,59 @@
                     garageData.sha = json.sha;
                     document.getElementById('app-km').value = garageData.lastKm;
                     renderParts();
-                } else {
-                    alert("No se encontró el archivo de datos. Asegúrate de haber completado la configuración.");
                 }
-            } catch (err) {
-                alert("Error crítico de conexión.");
-            } finally {
-                hideLoader();
-            }
+            } finally { hideLoader(); }
         }
 
-        async function syncAllToCloud(isInitial = false) {
-            showLoader("Guardando en la nube...");
+        async function syncAllToCloud(isNew = false) {
             const km = parseInt(document.getElementById('app-km').value) || 0;
             garageData.lastKm = km;
-
-            const url = `https://api.github.com/repos/${cloudConfig.user}/${cloudConfig.repo}/contents/${DATA_FILENAME}`;
-            const { sha, ...dataToUpload } = garageData;
-
-            const body = {
-                message: `Update: ${km} km - ${new Date().toLocaleDateString()}`,
-                content: btoa(JSON.stringify(dataToUpload, null, 2)),
-                sha: isInitial ? undefined : garageData.sha
+            const url = `https://api.github.com/repos/${cloudConfig.user}/${cloudConfig.repo}/contents/${FILENAME}`;
+            
+            const payload = {
+                message: "Sync Garaje",
+                content: btoa(JSON.stringify({ lastKm: garageData.lastKm, parts: garageData.parts, history: garageData.history }, null, 2))
             };
+            if (!isNew && garageData.sha) payload.sha = garageData.sha;
 
             try {
                 const res = await fetch(url, {
                     method: 'PUT',
                     headers: { 'Authorization': `token ${cloudConfig.token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(payload)
                 });
-
                 if (res.ok) {
-                    const result = await res.json();
-                    garageData.sha = result.content.sha;
+                    const r = await res.json();
+                    garageData.sha = r.content.sha;
                     renderParts();
-                    hideLoader();
                     return true;
                 }
-            } catch (err) {
-                console.error(err);
-            }
-            hideLoader();
+            } catch (e) { console.error(e); }
             return false;
-        }
-
-        function downloadBackup() {
-            const backup = {
-                exported_at: new Date().toISOString(),
-                cloud_config: { user: cloudConfig.user, repo: cloudConfig.repo },
-                data: garageData
-            };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
-            const dl = document.createElement('a');
-            dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", `backup_garaje_${Date.now()}.json`);
-            dl.click();
         }
 
         function renderParts() {
             const container = document.getElementById('app-parts');
             container.innerHTML = '';
-            
-            // Ordenar por urgencia (porcentaje de uso)
-            const sortedParts = [...garageData.parts].sort((a, b) => {
-                const usedA = (garageData.lastKm - a.lastKm) / a.limitKm;
-                const usedB = (garageData.lastKm - b.lastKm) / b.limitKm;
-                return usedB - usedA;
-            });
-
-            sortedParts.forEach(part => {
-                const used = garageData.lastKm - part.lastKm;
-                const pct = Math.min(100, Math.max(0, (used / part.limitKm) * 100));
-                const color = pct > 90 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : pct > 75 ? 'bg-amber-500' : 'bg-blue-500';
-                
-                const card = document.createElement('div');
-                card.className = "glass-card p-5 rounded-[2rem]";
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-2xl">${part.icon}</div>
-                            <div>
-                                <h3 class="font-bold text-sm text-white">${part.name}</h3>
-                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Cambio cada ${part.limitKm.toLocaleString()} KM</p>
-                            </div>
+            garageData.parts.forEach(p => {
+                const used = garageData.lastKm - p.lastKm;
+                const pct = Math.min(100, (used / p.limitKm) * 100);
+                container.innerHTML += `
+                    <div class="glass-card p-5 rounded-3xl">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-bold">${p.icon} ${p.name}</span>
+                            <span class="text-xs text-slate-400">${used} / ${p.limitKm} km</span>
                         </div>
-                        <button onclick="resetPart(${part.id})" class="text-[9px] font-black bg-blue-600/10 text-blue-500 border border-blue-500/20 px-3 py-2 rounded-xl active:scale-90 transition-all uppercase">Reiniciar</button>
-                    </div>
-                    <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden mb-2">
-                        <div class="progress-bar h-full ${color}" style="width: ${pct}%"></div>
-                    </div>
-                    <div class="flex justify-between text-[10px] font-bold">
-                        <span class="text-slate-400">Recorrido: ${used.toLocaleString()} km</span>
-                        <span class="${pct > 90 ? 'text-red-400 animate-pulse' : 'text-blue-400'}">Restante: ${(part.limitKm - used).toLocaleString()} km</span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function resetPart(id) {
-            const part = garageData.parts.find(p => p.id === id);
-            if (part && confirm(`¿Confirmas el mantenimiento de: ${part.name}?`)) {
-                garageData.history.unshift({
-                    name: part.name,
-                    km: garageData.lastKm,
-                    date: new Date().toLocaleDateString(),
-                    usage: garageData.lastKm - part.lastKm,
-                    icon: part.icon
-                });
-                part.lastKm = garageData.lastKm;
-                syncAllToCloud();
-            }
-        }
-
-        function renderHistory() {
-            toggleView('modal-history');
-            const list = document.getElementById('history-list');
-            list.innerHTML = garageData.history.length ? '' : '<p class="text-center text-slate-600 py-10 italic">No hay registros históricos.</p>';
-            garageData.history.forEach(h => {
-                list.innerHTML += `
-                    <div class="glass-card p-5 rounded-3xl border-l-4 border-l-blue-600">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-white text-sm">${h.icon} ${h.name}</span>
-                            <span class="text-[10px] text-slate-500 font-bold">${h.date}</span>
+                        <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500" style="width:${pct}%"></div>
                         </div>
-                        <p class="text-xs text-slate-400">Completado a los ${h.km.toLocaleString()} km</p>
-                        <p class="text-[9px] text-blue-400 mt-2 font-black uppercase">Vida útil: ${h.usage.toLocaleString()} KM</p>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
-        function addNewPart() {
-            const name = prompt("Nombre de la pieza:");
-            const limit = prompt("Límite de KM para el cambio:", "15000");
-            const icon = prompt("Emoji representativo:", "🔧");
-            if(name && limit) {
-                garageData.parts.push({ 
-                    id: Date.now(), 
-                    name, 
-                    limitKm: parseInt(limit), 
-                    lastKm: garageData.lastKm, 
-                    icon: icon || "🔧" 
-                });
-                syncAllToCloud();
-            }
-        }
-
-        function getAudioBasedParts() {
-            // Valores extraídos del audio proporcionado
-            return [
-                { id: 1, name: "Aceite de Motor", limitKm: 10000, lastKm: 0, icon: "🛢️" },
-                { id: 2, name: "Correa de Distribución", limitKm: 120000, lastKm: 0, icon: "⚙️" },
-                { id: 3, name: "Bujías", limitKm: 100000, lastKm: 0, icon: "⚡" },
-                { id: 4, name: "Pastillas de Freno", limitKm: 60000, lastKm: 0, icon: "🛑" },
-                { id: 5, name: "Embrague (Clutch)", limitKm: 150000, lastKm: 0, icon: "🏎️" },
-                { id: 6, name: "Neumáticos", limitKm: 60000, lastKm: 0, icon: "🛞" },
-                { id: 7, name: "Discos de Freno", limitKm: 120000, lastKm: 0, icon: "💿" },
-                { id: 8, name: "Amortiguadores", limitKm: 120000, lastKm: 0, icon: "🛡️" },
-                { id: 9, name: "Batería", limitKm: 40000, lastKm: 0, icon: "🔋" } // Estimado basado en "2 a 4 años" mencionado
-            ];
-        }
-
-        function showLoader(text) {
-            document.getElementById('loader-text').innerText = text;
-            document.getElementById('loader').classList.remove('hidden');
-        }
-
+        function showLoader(t) { document.getElementById('loader-text').innerText = t; document.getElementById('loader').classList.remove('hidden'); }
         function hideLoader() { document.getElementById('loader').classList.add('hidden'); }
-        function logout() { localStorage.removeItem('garage_cloud_link_pro'); location.reload(); }
+        function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
 </html>
