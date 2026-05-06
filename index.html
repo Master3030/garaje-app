@@ -11,100 +11,149 @@
         .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.4); }
     </style>
 </head>
-<body class="min-h-screen p-4">
+<body class="min-h-screen p-4 flex flex-col items-center justify-center">
 
-    <div id="view-setup" class="max-w-md mx-auto space-y-6 pt-10">
-        <div class="text-center">
-            <h1 class="text-2xl font-bold text-blue-500">Sincronización Cloud</h1>
-            <p class="text-slate-400 text-sm">Configura tu conexión privada</p>
+    <div id="view-setup" class="w-full max-w-md space-y-6">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black text-blue-500 uppercase tracking-tighter">Sincronización Total</h1>
+            <p class="text-slate-400 text-sm">Tu garaje 100% en la nube de GitHub</p>
         </div>
 
-        <div class="glass-card p-6 rounded-[2rem] space-y-4">
-            <input type="password" id="input-token" placeholder="Pega tu Token aquí" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800 text-white">
-            <button onclick="configurarApp()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold shadow-lg">ACTIVAR NUBE</button>
+        <div class="glass-card p-8 rounded-[2.5rem] space-y-4">
+            <input type="password" id="input-token" placeholder="Pega tu nuevo Token aquí" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800 text-white focus:border-blue-500 outline-none transition-all">
+            <button onclick="configurarApp()" id="btn-connect" class="w-full bg-blue-600 py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">ACTIVAR NUBE</button>
         </div>
     </div>
 
-    <div id="view-main" class="hidden max-w-md mx-auto">
-        <div class="bg-blue-600 p-8 rounded-[2.5rem] mb-6 text-center shadow-2xl">
-            <h2 class="text-4xl font-black" id="disp-km">0 KM</h2>
-            <p class="text-blue-200 text-xs uppercase font-bold mt-2">Kilometraje Total</p>
+    <div id="view-main" class="hidden w-full max-w-md">
+        <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-8 rounded-[2.5rem] mb-6 text-center shadow-2xl relative overflow-hidden">
+            <h2 class="text-5xl font-black" id="disp-km">0</h2>
+            <p class="text-blue-200 text-xs uppercase font-bold mt-1">Kilómetros Actuales</p>
+            <button onclick="actualizarKm()" class="mt-4 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-xs font-bold">Cambiar KM</button>
         </div>
         <div id="parts-list" class="space-y-3"></div>
     </div>
 
     <script>
-        // Esta es la parte clave: No guardamos el token como texto plano.
-        let connection = { t: '', u: 'Master3030', r: 'mantenimiento' };
-        let data = { lastKm: 0, parts: [] };
+        let connection = { u: 'Master3030', r: 'mantenimiento', t: '' };
+        let garage = { lastKm: 0, parts: [], sha: '' };
+        const FILE = 'garage_vault_pro.json';
 
         async function configurarApp() {
-            const rawToken = document.getElementById('input-token').value.trim();
-            if(!rawToken) return alert("Ingresa el token");
+            const tk = document.getElementById('input-token').value.trim();
+            if(!tk) return alert("Ingresa el token");
             
-            connection.t = rawToken;
-            
-            // Intentamos crear/leer el archivo en la nube
-            const success = await sync(true);
-            if(success) {
-                document.getElementById('view-setup').classList.add('hidden');
-                document.getElementById('view-main').classList.remove('hidden');
-                alert("Conectado a la nube con éxito");
+            connection.t = tk;
+            const btn = document.getElementById('btn-connect');
+            btn.innerText = "CONECTANDO...";
+            btn.disabled = true;
+
+            // Intentamos leer primero. Si no existe (404), lo creamos.
+            const check = await load();
+            if(check) {
+                successLogin();
             } else {
-                alert("Error de conexión. Verifica el token o que el repo 'mantenimiento' sea privado.");
+                // Si falló la lectura, intentamos crear el archivo inicial
+                const init = await save(true);
+                if(init) successLogin();
+                else {
+                    alert("ERROR: El token no tiene permisos o el repositorio no se llama 'mantenimiento'");
+                    btn.innerText = "ACTIVAR NUBE";
+                    btn.disabled = false;
+                }
             }
         }
 
-        async function sync(isInit = false) {
-            const fileName = 'garage_vault_pro.json';
-            const url = `https://api.github.com/repos/${connection.u}/${connection.r}/contents/${fileName}`;
-            
-            // Si es la primera vez, creamos la estructura que pediste en el audio
-            if(isInit) {
-                data.parts = [
+        function successLogin() {
+            document.getElementById('view-setup').classList.add('hidden');
+            document.getElementById('view-main').classList.remove('hidden');
+            render();
+        }
+
+        async function load() {
+            const url = `https://api.github.com/repos/${connection.u}/${connection.r}/contents/${FILE}`;
+            try {
+                const r = await fetch(url, { headers: { 'Authorization': `token ${connection.t}` } });
+                if(r.ok) {
+                    const j = await r.json();
+                    garage = JSON.parse(atob(j.content));
+                    garage.sha = j.sha;
+                    return true;
+                }
+            } catch(e) {}
+            return false;
+        }
+
+        async function save(isFirst = false) {
+            if(isFirst) {
+                garage.parts = [
                     { n: "Aceite Motor", l: 10000, c: 0, i: "🛢️" },
                     { n: "Correa Distribución", l: 120000, c: 0, i: "⚙️" },
                     { n: "Bujías", l: 100000, c: 0, i: "⚡" },
-                    { n: "Discos Freno", l: 120000, c: 0, i: "💿" }
+                    { n: "Pastillas Freno", l: 60000, c: 0, i: "🛑" }
                 ];
             }
 
+            const url = `https://api.github.com/repos/${connection.u}/${connection.r}/contents/${FILE}`;
+            const body = {
+                message: "Cloud Sync " + new Date().toLocaleString(),
+                content: btoa(JSON.stringify(garage, null, 2))
+            };
+            if(garage.sha) body.sha = garage.sha;
+
             try {
-                const res = await fetch(url, {
+                const r = await fetch(url, {
                     method: 'PUT',
                     headers: { 'Authorization': `token ${connection.t}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: "Cloud Sync",
-                        content: btoa(JSON.stringify(data)),
-                        sha: data.sha || null
-                    })
+                    body: JSON.stringify(body)
                 });
-                
-                if(res.ok) {
-                    const resJson = await res.json();
-                    data.sha = resJson.content.sha;
-                    render();
+                if(r.ok) {
+                    const resJ = await r.json();
+                    garage.sha = resJ.content.sha;
                     return true;
                 }
-            } catch (e) { return false; }
+            } catch(e) {}
+            return false;
+        }
+
+        function actualizarKm() {
+            const nuevo = prompt("Ingresa el kilometraje actual:", garage.lastKm);
+            if(nuevo !== null) {
+                garage.lastKm = parseInt(nuevo);
+                save();
+                render();
+            }
         }
 
         function render() {
-            document.getElementById('disp-km').innerText = data.lastKm + " KM";
+            document.getElementById('disp-km').innerText = garage.lastKm.toLocaleString();
             const list = document.getElementById('parts-list');
             list.innerHTML = '';
-            data.parts.forEach(p => {
+            garage.parts.forEach(p => {
+                const usado = garage.lastKm - p.c;
+                const pct = Math.min(100, (usado / p.l) * 100);
                 list.innerHTML += `
-                    <div class="glass-card p-4 rounded-2xl flex justify-between items-center">
-                        <div>
-                            <p class="font-bold">${p.i} ${p.n}</p>
-                            <p class="text-xs text-slate-500">Límite: ${p.l} km</p>
+                    <div class="glass-card p-5 rounded-3xl border-l-4 ${pct > 90 ? 'border-l-red-500' : 'border-l-blue-500'}">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-lg font-bold">${p.i} ${p.n}</p>
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Uso: ${usado} / ${p.l} KM</p>
+                            </div>
+                            <button onclick="reiniciar(${garage.parts.indexOf(p)})" class="bg-slate-900 p-2 rounded-xl text-[10px] font-black text-blue-500">REINICIAR</button>
                         </div>
-                        <div class="text-right">
-                            <p class="font-black text-blue-400">${p.c} km</p>
+                        <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500 transition-all" style="width: ${pct}%"></div>
                         </div>
                     </div>`;
             });
+        }
+
+        function reiniciar(idx) {
+            if(confirm("¿Confirmas el cambio de esta pieza?")) {
+                garage.parts[idx].c = garage.lastKm;
+                save();
+                render();
+            }
         }
     </script>
 </body>
